@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using API.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using API.Models;
+using System;
 
 namespace API.Controllers
 {
@@ -11,6 +11,15 @@ namespace API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private readonly IConfiguration _configuration;
+        public UsersController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+
+        }
+        ResultModel Data = new ResultModel();
+        UserService Service = new UserService();
+
         [HttpGet]
         public ActionResult GetUser()
         {
@@ -20,10 +29,24 @@ namespace API.Controllers
 
         [HttpGet]
         [Route("GetUsera")]
-        public ActionResult GetUsera()
+        public ActionResult GetUsera()///api/Users/GetUsera
         {
+            try
+            {
+                Data.Result = Service.SpGetAllClient(_configuration.GetValue<string>("Data:ConnectionString"));
+                Data.Result = JsonConvert.SerializeObject(Data, Formatting.Indented);
 
-            return Ok("false");
+                return Ok(Data.Result);
+            }
+            catch (Exception ex) 
+            {
+                Data.Status = "error";
+                Data.Message = ex.Message;
+                Data.Result = JsonConvert.SerializeObject(Data, Formatting.Indented);
+
+                return Ok(Data.Result);
+
+            }
         }
 
         [HttpGet]
